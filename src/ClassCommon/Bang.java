@@ -3,16 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sudoku.net;
+package ClassCommon;
+
+import java.io.Serializable;
 
 /**
  *
  * @author HOANDHTB
  */
-public class Bang {
+public class Bang implements Serializable{
     public String [][]arrTable=new String[9][9];
     public String [][]arrTableCurrent=new String[9][9];
-    public boolean  [][]checkTable=new boolean[9][9];
+    public int  [][]checkTable=new int[9][9];
     public Bang()
     {
         for(int i=0;i<9;i++)
@@ -20,7 +22,7 @@ public class Bang {
             {
                 arrTableCurrent[i][j]="";
                 arrTable[i][j]="";
-                checkTable[i][j]=true;
+                checkTable[i][j]=1;
             }
     }
 }

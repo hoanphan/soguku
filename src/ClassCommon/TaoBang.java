@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sudoku.net;
+package ClassCommon;
 
 import com.sun.rowset.internal.Row;
 import java.util.ArrayList;
@@ -17,12 +17,12 @@ import java.util.Random;
  */
 public class TaoBang {
     protected String [][] board;
-    protected boolean [][]mutable;
+    protected int [][]mutable;
     private String []arr={"1","2","3","4","5","6","7","8","9"};
     int randomRow;
     int randomColumn;
     String number;
-    public TaoBang(boolean [][]mutable,String [][]board)
+    public TaoBang(int [][]mutable,String [][]board)
     {
         this.board=board;
         this.mutable=mutable;
@@ -30,7 +30,7 @@ public class TaoBang {
     public  Bang getBang()
     {
                 Bang table=new Bang();	
-            	int numberOfValuesToKeep = 20;
+            	int numberOfValuesToKeep = 30;
                 
 		for(int i = 0;i < numberOfValuesToKeep;i++) {
 			randomRow = Random();
@@ -54,7 +54,7 @@ public class TaoBang {
                                {
                                     number=this.getRandom(arr);
                                }
-                               mutable[randomRow][randomColumn]=false;
+                               mutable[randomRow][randomColumn]=0;
                                board[randomRow][randomColumn]=number;
                                
 			}
@@ -67,10 +67,10 @@ public class TaoBang {
     }
    
     public boolean isSlotAvailable(int row,int col) {
-		 return (this.inRange(row,col) && this.board[row][col].equals("") && this.isSlotMutable(row, col));
+		 return (this.inRange(row,col) && this.board[row][col].equals("") && this.isSlotMutable(row, col)==1);
 	}
    
-    public boolean isSlotMutable(int row,int col) {
+    public int isSlotMutable(int row,int col) {
 		return this.mutable[row][col];
 	}
     public boolean inRange(int row,int col) {

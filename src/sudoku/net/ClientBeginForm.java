@@ -7,6 +7,7 @@ package sudoku.net;
 
 import ClassCommon.Bang;
 import ClassCommon.Player;
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -24,7 +25,9 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -43,6 +46,8 @@ public class ClientBeginForm extends javax.swing.JFrame {
     String questionDialog="";
     int STTNguoiChoi;
     boolean checkStart=false;
+    boolean clockRunning=true;
+    private boolean resetClock=false;
     private ArrayList<Player> listPlayers=new ArrayList<Player>();
     private Bang table=new Bang();
     public ClientBeginForm() {
@@ -53,12 +58,26 @@ public class ClientBeginForm extends javax.swing.JFrame {
             questionDialog=JOptionPane.showInputDialog
                     (null,"<html>Tên của người chơi?","Hộp thoại",JOptionPane.QUESTION_MESSAGE);
             run();
+            jScrollPane1.setOpaque(false);
+            jScrollPane1.getViewport().setOpaque(false);
+            Table.setOpaque(false);
+          
+            Table.setBackground(Color.WHITE);
+            Table.setShowGrid(true);
+            Table.setGridColor(Color.BLACK);
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment( JLabel.CENTER );
+            Table.setDefaultRenderer(String.class, centerRenderer);
             out.writeUTF(questionDialog);
             out.flush();
             STTNguoiChoi=in.readInt();
             if(STTNguoiChoi==1)
             {
+                Time.setVisible(false);
                 buttonStart.setVisible(true);
+                iconClock.setVisible(false);
+                btnPracticipation.setVisible(false);
+                lbPracticipation.setVisible(false);
             }
             else
             {
@@ -70,31 +89,7 @@ public class ClientBeginForm extends javax.swing.JFrame {
             Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    public ClientBeginForm(SSLSocket socket) {
-        try {
-            initComponents();
-            buttonStart.setOpaque(false);
-            buttonStart.setContentAreaFilled(false);
-            questionDialog=JOptionPane.showInputDialog
-                    (null,"<html>Tên của người chơi?","Hộp thoại",JOptionPane.QUESTION_MESSAGE);
-            run();
-            out.writeUTF(questionDialog);
-            out.flush();
-            STTNguoiChoi=in.readInt();
-            if(STTNguoiChoi==1)
-            {
-                buttonStart.setVisible(true);
-            }
-            else
-            {
-                 buttonStart.setVisible(false);
-            }
-            
-            //System.err.println(STTNguoiChoi);
-        } catch (IOException ex) {
-            Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+   
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -108,16 +103,20 @@ public class ClientBeginForm extends javax.swing.JFrame {
         PanelSelection = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         btnDoiKhang = new javax.swing.JButton();
-        btnHopTac = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         PanelGrid = new javax.swing.JPanel();
+        btnPracticipation = new javax.swing.JButton();
+        iconClock = new javax.swing.JLabel();
+        Time = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Table = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
+        lbPracticipation = new javax.swing.JLabel();
         buttonStart = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(255, 255, 255));
         setResizable(false);
 
         PanelMain.setLayout(new java.awt.CardLayout());
@@ -128,29 +127,38 @@ public class ClientBeginForm extends javax.swing.JFrame {
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/Selection.png"))); // NOI18N
         PanelSelection.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 50, 480, 50));
 
+        btnDoiKhang.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/002_022_military_battle_attack_swords-128.png"))); // NOI18N
         btnDoiKhang.setText("Đối kháng");
         btnDoiKhang.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDoiKhangActionPerformed(evt);
             }
         });
-        PanelSelection.add(btnDoiKhang, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 120, 131, 34));
-
-        btnHopTac.setText("Hợp tác");
-        btnHopTac.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnHopTacActionPerformed(evt);
-            }
-        });
-        PanelSelection.add(btnHopTac, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 190, 131, 34));
+        PanelSelection.add(btnDoiKhang, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 130, 130, 120));
 
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/Backgruond.png"))); // NOI18N
         PanelSelection.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 0, 530, 340));
 
         PanelMain.add(PanelSelection, "card3");
 
+        PanelGrid.setBackground(new java.awt.Color(255, 255, 255));
         PanelGrid.setPreferredSize(new java.awt.Dimension(480, 328));
         PanelGrid.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        btnPracticipation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/participation.png"))); // NOI18N
+        btnPracticipation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPracticipationActionPerformed(evt);
+            }
+        });
+        PanelGrid.add(btnPracticipation, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 290, 90, 50));
+
+        iconClock.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/Clock.gif"))); // NOI18N
+        PanelGrid.add(iconClock, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, -10, 60, 80));
+
+        Time.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Time.setText("jLabel6");
+        PanelGrid.add(Time, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 60, -1, -1));
 
         Table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -193,7 +201,13 @@ public class ClientBeginForm extends javax.swing.JFrame {
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/sudoku-logo.png"))); // NOI18N
-        PanelGrid.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, 475, 100));
+        PanelGrid.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, 470, 100));
+
+        lbPracticipation.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        lbPracticipation.setForeground(new java.awt.Color(0, 51, 204));
+        lbPracticipation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbPracticipation.setText("Tham gia....");
+        PanelGrid.add(lbPracticipation, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 270, 220, 20));
 
         buttonStart.setBackground(new java.awt.Color(255, 255, 255));
         buttonStart.setForeground(new java.awt.Color(255, 255, 255));
@@ -207,10 +221,10 @@ public class ClientBeginForm extends javax.swing.JFrame {
                 buttonStartActionPerformed(evt);
             }
         });
-        PanelGrid.add(buttonStart, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 270, 80, 50));
+        PanelGrid.add(buttonStart, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 290, 80, 50));
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/Backgruond1.png"))); // NOI18N
-        PanelGrid.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 0, 490, 330));
+        PanelGrid.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 0, 490, 330));
 
         PanelMain.add(PanelGrid, "card2");
 
@@ -243,6 +257,54 @@ public class ClientBeginForm extends javax.swing.JFrame {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+    public class ClockTimeOut implements Runnable
+    {
+        ClientBeginForm form;
+        public ClockTimeOut(ClientBeginForm client)
+        {
+            this.form=client;
+        }
+        @Override
+        public void run() {
+          if(STTNguoiChoi!=1)
+          {
+              for(int i=1;i<=60;i++)
+              {
+                  try {
+                      if(resetClock)
+                      {
+                          resetClock=false;
+                          i=0;
+                      }
+                      Time.setText(""+i);
+                      clockRunning=true;
+                      Thread.sleep(1000);
+                      if(i==60)
+                      {
+                        if(!checkStart)
+                        {
+                            clockRunning=false;
+                            out.writeUTF("close");
+                            out.flush();
+                            out.writeInt(STTNguoiChoi);
+                            socket.close();
+                            JOptionPane.showConfirmDialog(null, "Bạn đã không kịp tham gia hàng chờ!\ntrận đấu hiện tại đã có thể đã bắt đầu\n bạn hãy tham gia lại trò chơi "
+                                    ,"Thông báo",JOptionPane.YES_OPTION,JOptionPane.WARNING_MESSAGE);
+                            form.setVisible(false);
+                            
+                        }
+                      }
+                  } catch (InterruptedException ex) {
+                      Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
+                  } catch (IOException ex) {
+                      Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
+                  }
+                  
+              }
+          }
+        }
+        
     }
     public class Listen implements Runnable{
        
@@ -291,6 +353,7 @@ public class ClientBeginForm extends javax.swing.JFrame {
                     {
                         listPlayers=(ArrayList<Player>)object;
                         inserRowToTable(listPlayers);
+                        objectInputStream.close();
                         socket.close();
                         SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
                          socket= (SSLSocket) sslsocketfactory.createSocket("localhost", Port);
@@ -309,9 +372,8 @@ public class ClientBeginForm extends javax.swing.JFrame {
                          String[] supported = socket. getSupportedCipherSuites();
                          socket. setEnabledCipherSuites(supported);
                         this.form.setVisible(false);
-                        SudokuNet sudokuNet=new SudokuNet(socket,questionDialog,table,0);
+                        SudokuNet sudokuNet=new SudokuNet(socket,STTNguoiChoi,table,listPlayers.get(0).nameGruop,questionDialog);
                         sudokuNet.setVisible(true);
-                         
                          break;
                     }
                 }
@@ -356,15 +418,12 @@ public class ClientBeginForm extends javax.swing.JFrame {
                 PanelMain.repaint();;
                 PanelMain.revalidate();
                new Thread(new ClientListen(socket,this)).start();
+               new Thread(new ClockTimeOut(this)).start();
            }
         } catch (IOException ex) {
             Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnDoiKhangActionPerformed
-
-    private void btnHopTacActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHopTacActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnHopTacActionPerformed
 
     private void buttonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStartActionPerformed
         try {
@@ -372,7 +431,10 @@ public class ClientBeginForm extends javax.swing.JFrame {
             {
                 outputStream=socket.getOutputStream();
                 out=new DataOutputStream(outputStream);
-                out.writeUTF("start");
+                if(Player.checkPlayerDoStart(listPlayers))
+                    out.writeUTF("start");
+                else
+                    JOptionPane.showConfirmDialog(null, "Người chơi chưa chưa sẵn sàng. chưa thể bắt đầu.","Thông báo",JOptionPane.ERROR_MESSAGE);
             } else
             {
                 JOptionPane.showConfirmDialog(null, "Số lượng người chơi chưa đủ bạn chưa thể bắt đầu.","Thông báo",JOptionPane.ERROR_MESSAGE);
@@ -381,6 +443,43 @@ public class ClientBeginForm extends javax.swing.JFrame {
             Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_buttonStartActionPerformed
+
+    private void btnPracticipationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPracticipationActionPerformed
+        try {
+            
+            outputStream=socket.getOutputStream();
+            out=new DataOutputStream(outputStream);
+            if(!checkStart)
+            {
+                out.writeUTF("ready");
+                out.flush();
+                out.writeInt(STTNguoiChoi);
+                checkStart=true;
+                Time.setVisible(false);
+                iconClock.setVisible(false);
+                btnPracticipation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/Pause.png")));
+                lbPracticipation.setText("Bạn đã ra nhập hàng chờ");
+            }
+            else
+            {
+                out.writeUTF("stop");
+                out.flush();
+                out.writeInt(STTNguoiChoi);
+                checkStart=false;
+                Time.setVisible(true);
+                iconClock.setVisible(true);
+                btnPracticipation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/participation.png")));
+                lbPracticipation.setText("Tham gia hàng chờ");
+                if(clockRunning)
+                    resetClock=true;
+                else
+                 new Thread(new ClockTimeOut(this)).start();
+            }
+          
+        } catch (IOException ex) {
+            Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnPracticipationActionPerformed
 
     /**
      * @param args the command line arguments
@@ -422,13 +521,16 @@ public class ClientBeginForm extends javax.swing.JFrame {
     private javax.swing.JPanel PanelMain;
     private javax.swing.JPanel PanelSelection;
     private javax.swing.JTable Table;
+    private javax.swing.JLabel Time;
     private javax.swing.JButton btnDoiKhang;
-    private javax.swing.JButton btnHopTac;
+    private javax.swing.JButton btnPracticipation;
     private javax.swing.JButton buttonStart;
+    private javax.swing.JLabel iconClock;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lbPracticipation;
     // End of variables declaration//GEN-END:variables
 }

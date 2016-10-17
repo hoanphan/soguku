@@ -7,6 +7,7 @@ package Sever;
 
 import ClassCommon.Bang;
 import ClassCommon.Player;
+import ClassCommon.PlayerInGruop;
 import ClassCommon.TaoBang;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -30,7 +31,10 @@ import javax.net.ssl.SSLSocket;
  * @author HOANDHTB
  */
 public class Sever implements Runnable {
+    public int nameGruop=0;
+    public ArrayList<PlayerInGruop> listPlayerInGruop=new ArrayList<>();
     boolean kt=false;
+    PlayerInGruop playerInGruop;
     private static final int Port=1995;
     private static SSLServerSocket serverSocket;
     private  SSLSocket socket;
@@ -57,13 +61,14 @@ public class Sever implements Runnable {
             SSLServerSocketFactory sslserversocketfactory =
                     (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             serverSocket =(SSLServerSocket) sslserversocketfactory.createServerSocket(Port);
-           
+            System.out.println("Sever is running..........");
             while(true){
                 try {
                     socket = (SSLSocket) serverSocket.accept();
                     String[] supported = socket. getSupportedCipherSuites();
                     socket. setEnabledCipherSuites(supported);
                     listSocket.add(socket);
+                    playerInGruop=new PlayerInGruop(nameGruop, listSocket);
                     inputStream=socket.getInputStream();
                     outputStream=socket.getOutputStream();
                     new Thread(new SeverHandle(socket,inputStream,outputStream)).start();
@@ -109,43 +114,99 @@ public class Sever implements Runnable {
                 if(socket.isClosed()==false)
                 {
                     String name=dataInputStream.readUTF();
-                   
+                    //System.out.println(name);
                       if(name.equals("sendResult"))
                       {
-                         listSocketResult.add(socket);
-                         dataOutputStream.writeUTF("ok");
-                         String namePlayer=dataInputStream.readUTF();
-                         Player player=new Player(slnguoi, namePlayer,socket);
+                         int serial= dataInputStream.readInt();
+                         String name2=dataInputStream.readUTF();
+ 
+                         Player player=new Player(serial, name2);
+                          System.out.println(player.toString());
+                         player.function=slnguoi+"";
                          dsNguoiChoiDaHoanThanh.add(player);
-                         for(int i=0;i<listSocket.size();i++)
-                         {
-                               if(listSocketResult.get(i).isConnected())
-                                new Thread(new SendListLayer(listSocketResult.get(i),dsNguoiChoiDaHoanThanh,null)).start();
-                         }
-                        }
+                         slnguoi++;
+                          for(int i=0;i<listSocket.size();i++)
+                                   {
+                                       if(!listSocket.get(i).isClosed()&&!listSocket.get(i).isOutputShutdown()&&listSocket.get(i).isConnected())
+                                           new Thread(new SendListLayer(listSocket.get(i),dsNguoiChoiDaHoanThanh,null)).start();
+                                      
+                                   }
+                      }
+                      if(name.equals("stop"))
+                      {
+                                  int serial=dataInputStream.readInt();
+                                  
+                                    ArrayList<SSLSocket> list=playerInGruop.listSockets;
+                                    DsNguoiChoi=Player.setFunction(DsNguoiChoi, serial,"Chờ");
+                                    playerInGruop.player=DsNguoiChoi;
+                                   for(int i=0;i<list.size();i++)
+                                   {
+                                       if(!list.get(i).isClosed()&&!list.get(i).isOutputShutdown()&&list.get(i).isConnected())
+                                           new Thread(new SendListLayer(list.get(i),DsNguoiChoi,null)).start();
+                                      
+                                   }
+                      }else
+                      if(name.equals("ready"))
+                      {
+                                  int serial=dataInputStream.readInt();
+                                  
+                                    ArrayList<SSLSocket> list=playerInGruop.listSockets;
+                                    DsNguoiChoi=Player.setFunction(DsNguoiChoi, serial,"Đã sẵn sàng");
+                                    playerInGruop.player=DsNguoiChoi;
+                                   for(int i=0;i<list.size();i++)
+                                   {
+                                       if(!list.get(i).isClosed()&&!list.get(i).isOutputShutdown()&&list.get(i).isConnected())
+                                           new Thread(new SendListLayer(list.get(i),DsNguoiChoi,null)).start();
+                                      
+                                   }
+                      }
+                      else
+                      if(name.equals("close"))
+                      {
+                                  System.out.println("Có đứa out!!!!!");
+                                  int serial=dataInputStream.readInt();
+                                  System.out.println();
+                                    ArrayList<SSLSocket> list=playerInGruop.listSockets;
+                                    DsNguoiChoi=Player.removePlayer(DsNguoiChoi, serial);
+                                    playerInGruop.player=DsNguoiChoi;
+                                   for(int i=0;i<list.size();i++)
+                                   {
+                                       if(!list.get(i).isClosed()&&!list.get(i).isOutputShutdown()&&list.get(i).isConnected())
+                                           new Thread(new SendListLayer(list.get(i),DsNguoiChoi,null)).start();
+                                      
+                                   }
+                      }
                       else{
-                            if(!name.equals("start"))
+                            if(!name.equals("start")&&!name.equals("ready")&&!name.equals("close")
+                                    &&!name.equals("sendResult")&&!name.equals("stop"))
                             {
-                                Player player=new Player(slNguoiChoi, name,socket);
+                                Player player=new Player(slNguoiChoi, name);
+                                player.setGruop(nameGruop);
                                 if(slNguoiChoi==1)
                                     player.setFuntion("Chủ phòng");
                                 else
-                                    player.setFuntion("Khách");
+                                    player.setFuntion("Chờ");
                                 DsNguoiChoi.add(player);
                                 dataOutputStream.writeInt(slNguoiChoi);
-
                                 slNguoiChoi++;
                                 CheDo=dataInputStream.readUTF();
+                                playerInGruop.player=DsNguoiChoi;
                                 if(CheDo.equals("countervailing"))
                                 {
-                                   dataOutputStream.writeBoolean(true);
-                                   dataOutputStream.flush();
-                                   for(int i=0;i<listSocket.size();i++)
+                                    ArrayList<SSLSocket> list=playerInGruop.listSockets;
+                                    
+                                    dataOutputStream.writeBoolean(true);
+                                    dataOutputStream.flush();
+                                    DsNguoiChoi=playerInGruop.player;
+                                   for(int i=0;i<list.size();i++)
                                    {
-                                       if(listSocket.get(i).isConnected())
-                                        new Thread(new SendListLayer(listSocket.get(i),DsNguoiChoi,null)).start();
+                                       if(!list.get(i).isClosed()&&!list.get(i).isOutputShutdown()&&list.get(i).isConnected())
+                                           new Thread(new SendListLayer(list.get(i),DsNguoiChoi,null)).start();
+                                      
                                    }
+                                      System.out.println(list.size());
                                 }
+                                
                             } 
                             else
                             {
@@ -153,12 +214,23 @@ public class Sever implements Runnable {
                                  initializeMutableSlots();
                                  TaoBang bang=new TaoBang(mutable,board);
                                  table=bang.getBang();
-                                 for(int i=0;i<listSocket.size();i++)
+                                  DsNguoiChoi=playerInGruop.player;;
+                                   ArrayList<SSLSocket> list=playerInGruop.listSockets;
+                                   for(int i=0;i<list.size();i++)
                                    {
-                                       if(listSocket.get(i).isConnected())
-                                        new Thread(new SendListLayer(listSocket.get(i),null,table)).start();
-                                   }
+                                         SSLSocket socket=list.get(i);
+                                         if(!list.get(i).isClosed()&&!list.get(i).isOutputShutdown()&&list.get(i).isConnected())
 
+                                         new Thread(new SendListLayer(socket,null,table)).start();
+                                   }
+                                   slNguoiChoi=1;
+                                   PlayerInGruop.resetClientInGruopStart(nameGruop, listPlayerInGruop);
+                                   listPlayerInGruop.add(playerInGruop);
+                                   listSocket.removeAll(listSocket);
+                                   DsNguoiChoi=new ArrayList<>();
+                                   nameGruop++;
+                                   playerInGruop=new PlayerInGruop(nameGruop, listSocket);
+                                
                             }
                   }
                 }
@@ -166,7 +238,7 @@ public class Sever implements Runnable {
                 //String CheDo=dataInputStream.readUTF();
                 
             } catch (IOException ex) {
-               // Logger.getLogger(Sever.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(Sever.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -208,7 +280,7 @@ public class Sever implements Runnable {
                             }
 
                     } catch (IOException ex) {
-                        Logger.getLogger(Sever.class.getName()).log(Level.SEVERE, null, ex);
+                       // Logger.getLogger(Sever.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
         }

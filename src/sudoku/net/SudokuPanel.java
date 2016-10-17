@@ -65,38 +65,17 @@ public class SudokuPanel extends JPanel {
         {
             
             Bang bang=new Bang();
-            if(checkTable())
-            {
+           
                 for(int i=0;i<9;i++)
                     for(int j=0;j<9;j++)
                     {
                         bang.arrTable[i][j]=board[i][j];
                         bang.checkTable[i][j]=mutable[i][j];
                     }
-            }
-            else
-            {
-                bang=null;
-            }
+           
             return bang;
         }
-        private boolean checkTable()
-        {
-           boolean kt=true;
-//            for (int i = 0; i < 9; i++) {
-//                for(int j=0;i<9;j++)
-//                {
-//                    if(board[i][j].equals(""))
-//                    {
-//                        kt=false;
-//                        break;
-//                    }
-//                }
-//                if(!kt)
-//                        break;
-//            }
-            return kt;
-        }
+      
 	
 	public void setFontSize(int fontSize) {
 		this.fontSize = fontSize;

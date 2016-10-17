@@ -51,7 +51,7 @@ public class SudokuNet extends JFrame implements KeyListener{
 	private SudokuPanel panel;
         boolean check=false;
         private  SSLSocket socket;
-        private String name;
+        private int serial;
         private  Bang table;
         private  InputStream inputStream;
         private  ObjectInputStream objectInputStream;
@@ -59,12 +59,17 @@ public class SudokuNet extends JFrame implements KeyListener{
         private  DataOutputStream dataOutputStream;
         private DataInputStream dataInputStream;
         private  ObjectOutputStream objectOutputStream;
-        private  int typeGame;
-	public SudokuNet(SSLSocket socket,String name,Bang table,int typeGame) {
+        private  int group;
+        String name;
+        SudokuNet sudokuNet;
+	public SudokuNet(SSLSocket socket,int serial,Bang table,int gruop,String name) {
             try {
                 this.socket=socket;
+                this.serial=serial;
+                this.group=gruop;
                 this.name=name;
-                this.typeGame=typeGame;
+                System.out.println(serial+" "+name);
+                sudokuNet=this;
                 inputStream=socket.getInputStream();
                 outputStream=socket.getOutputStream();
                 dataOutputStream=new DataOutputStream(outputStream);
@@ -81,13 +86,18 @@ public class SudokuNet extends JFrame implements KeyListener{
                     @Override
                     public void mouseClicked(MouseEvent e) {
                       
-//                            dataOutputStream.writeUTF("sendResult");
-//                            dataOutputStream.flush();
-//                            if(dataInputStream.readUTF().equals("ok")){
-//                                dataOutputStream.writeUTF(name);
-//                                dataOutputStream.flush();
-//                                
-//                            }
+                        try {
+                            dataOutputStream.writeUTF("sendResult");
+                            dataOutputStream.flush();
+                            dataOutputStream.writeInt(serial);
+                            dataOutputStream.flush();
+                            dataOutputStream.writeUTF(name);
+                            sudokuNet.setVisible(false);
+                            FormResult frm=new FormResult(socket);
+                            frm.setVisible(true);
+                        } catch (IOException ex) {
+                            Logger.getLogger(SudokuNet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                           
                             
                     }

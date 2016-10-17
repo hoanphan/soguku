@@ -5,7 +5,25 @@
  */
 package sudoku.net;
 
+import ClassCommon.Bang;
+import ClassCommon.Player;
 import java.awt.Color;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -16,16 +34,136 @@ public class FormResult extends javax.swing.JFrame {
     /**
      * Creates new form FormResult
      */
-    public FormResult() {
+    private ArrayList<Player> listPlayers=new ArrayList<>();
+     private static final int Port=1995;
+    private static final String HOST="localhost";
+    private  SSLSocket socket;
+     private  Bang bang;
+        private  InputStream inputStream;
+        private  ObjectInputStream objectInputStream;
+        private DataInputStream dataInputStream;
+     
+    public FormResult(SSLSocket socket) {
         initComponents();
+        this.socket=socket;
        jScrollPane1.setOpaque(false);
        jScrollPane1.getViewport().setOpaque(false);
        table.setOpaque(false);
        Color backgound = new Color(0, 0, 0, 0) ;
        table.setBackground(backgound);
        table.setShowGrid(true);
+        run();
+       new Thread(new ClientListen(socket)).start();;
     }
-
+    public void run()
+    {   
+//            System.setProperty("javax.net.ssl.trustStore", "jnp4e.keys");
+//              try {
+//            SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//            socket= (SSLSocket) sslsocketfactory.createSocket("localhost", Port);
+//            String[] supported = socket. getSupportedCipherSuites();
+//            socket. setEnabledCipherSuites(supported);
+//          
+//           
+//           
+//        } catch (Exception exception) {
+//            exception.printStackTrace();
+//        }
+    }
+    public FormResult() {
+        initComponents();
+      
+    }
+     public class Listen implements Runnable{
+       
+        InputStream in;
+        ObjectInputStream objectInputStream;
+        Object object;
+      
+        public Listen(SSLSocket socket)
+        {
+           
+            try {
+                in=socket.getInputStream();
+                objectInputStream=new ObjectInputStream(in);
+            } catch (IOException ex) {
+                Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        public void inserRowToTable(ArrayList<Player> players)
+        {
+            Vector Collum=new Vector();
+           Collum.add("STT");
+           Collum.add("Tên người chơi");
+           Collum.add("Thứ hạng");
+           Vector object=new Vector();
+           for(Player player:players)
+           {
+               JLabel lable=new JLabel();
+               lable.setText("aaa");
+               Vector Row=new Vector();
+               Row.add(player.serial);
+               Row.add(player.name_player);
+               Row.add(player.function);
+               
+               object.add(Row);
+           }
+           DefaultTableModel model=new DefaultTableModel(object, Collum);
+           table.setModel(model);
+        }
+        @Override
+        public void run() {
+            try {
+                while(( object =  objectInputStream.readObject())!=null)
+                {
+                   String str=object.toString();
+                    System.out.println(str);
+                    if(str.indexOf("ClassCommon.Player")>=0)
+                    {
+                        listPlayers=(ArrayList<Player>)object;
+                        inserRowToTable(listPlayers);
+                        objectInputStream.close();
+                        socket.close();
+                        SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                         socket= (SSLSocket) sslsocketfactory.createSocket("localhost", Port);
+                         String[] supported = socket. getSupportedCipherSuites();
+                         socket. setEnabledCipherSuites(supported);
+                         in=socket.getInputStream();
+                         objectInputStream=new ObjectInputStream(in);
+                    }
+                  
+                }
+                
+              
+            } catch (IOException ex) {
+                
+              // Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+              //  Logger.getLogger(ClientBeginForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+    }
+    
+   public class ClientListen implements Runnable
+   {
+         SSLSocket socket;
+         
+        public ClientListen(SSLSocket socket)
+        {
+           this.socket=socket;
+         
+        }
+        @Override
+        public void run() {
+                           
+                 new Thread(new Listen(socket)).start();
+                  
+            }
+              
+        
+   }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

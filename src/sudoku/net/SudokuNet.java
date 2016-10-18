@@ -85,19 +85,38 @@ public class SudokuNet extends JFrame implements KeyListener{
                 result.addMouseListener(new MouseListener() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                      
-                        try {
-                            dataOutputStream.writeUTF("sendResult");
-                            dataOutputStream.flush();
-                            dataOutputStream.writeInt(serial);
-                            dataOutputStream.flush();
-                            dataOutputStream.writeUTF(name);
-                            sudokuNet.setVisible(false);
-                            FormResult frm=new FormResult(socket);
-                            frm.setVisible(true);
-                        } catch (IOException ex) {
-                            Logger.getLogger(SudokuNet.class.getName()).log(Level.SEVERE, null, ex);
+                        int sl=0;
+                        Bang table=panel.getBang();
+                        for(int i=0;i<9;i++)
+                            for(int j=0;j<9;j++)
+                            {
+                                if(!table.arrTable[i][j].equals(""))
+                                    sl++;
+                            }
+                        if(sl==80)
+                        {   
+                            CheckResult checkResult=new CheckResult(table);
+                            table=checkResult.CheckAll();
+                            if(checkResult.checkRequest(table.checkTable))
+                            {
+                                try {
+                                dataOutputStream.writeUTF("sendResult");
+                                dataOutputStream.flush();
+                                dataOutputStream.writeInt(serial);
+                                dataOutputStream.flush();
+                                dataOutputStream.writeUTF(name);
+                                sudokuNet.setVisible(false);
+                                FormResult frm=new FormResult(socket);
+                                frm.setVisible(true);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(SudokuNet.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                            else
+                                panel.checkResult(table);
                         }
+                        else
+                            JOptionPane.showConfirmDialog(null, "Bạn chưa nhập số lượng ô");
                           
                             
                     }

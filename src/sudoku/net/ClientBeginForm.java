@@ -134,7 +134,7 @@ public class ClientBeginForm extends javax.swing.JFrame {
                 btnDoiKhangActionPerformed(evt);
             }
         });
-        PanelSelection.add(btnDoiKhang, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 130, 130, 120));
+        PanelSelection.add(btnDoiKhang, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 130, 130, 120));
 
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imager/Backgruond.png"))); // NOI18N
         PanelSelection.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 0, 530, 340));
